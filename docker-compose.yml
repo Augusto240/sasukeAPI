@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=sasuke_secret_key
+      - API_TOKEN=sasuke_api_token
+    restart: unless-stopped

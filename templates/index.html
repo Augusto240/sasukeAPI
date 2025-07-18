@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasuke API</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" type="image/png" href="/static/images/uchiha.png">
+</head>
+<body class="light-mode">
+    <div class="theme-toggle">
+        <i class="fas fa-moon" id="theme-toggle-icon"></i>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="/static/images/sasuke.png" alt="Sasuke Uchiha">
+            </div>
+            <h1>API de Citações do Sasuke</h1>
+            <p>Explore a sabedoria e a determinação de Sasuke Uchiha</p>
+        </header>
+        
+        <section class="quote-section">
+            <div class="quote-container">
+                <div class="sharingan-icon">
+                    <img src="/static/images/sharingan.png" alt="Sharingan" class="spin-on-click">
+                </div>
+                <div class="quote-box">
+                    <p id="quote-text">Clique no botão para ver uma citação do Sasuke</p>
+                    <div class="quote-details">
+                        <p id="quote-context"></p>
+                        <p id="quote-source"></p>
+                        <p id="quote-category"></p>
+                    </div>
+                </div>
+            </div>
+            <button id="get-quote" class="btn">
+                <i class="fas fa-bolt"></i> Ver Citação Aleatória
+            </button>
+            <div class="category-filters">
+                <h3>Filtrar por época:</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn" data-category="all">Todas</button>
+                    <button class="filter-btn" data-category="Genin">Genin</button>
+                    <button class="filter-btn" data-category="Shippuden">Shippuden</button>
+                    <button class="filter-btn" data-category="Boruto">Boruto</button>
+                    <button class="filter-btn" data-category="Flashback">Flashbacks</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="api-docs">
+            <h2>Uso da API</h2>
+            <div class="endpoint">
+                <h3>GET /sasuke/quote</h3>
+                <p>Obter uma citação aleatória do Sasuke</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/quote</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>GET /sasuke/quotes</h3>
+                <p>Obter todas as citações do Sasuke</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/quotes</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>GET /sasuke/quote/:id</h3>
+                <p>Obter uma citação específica pelo ID</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/quote/1</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>GET /sasuke/search?q=termo</h3>
+                <p>Pesquisar citações contendo o termo</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/search?q=vingança</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>GET /sasuke/quotes/category/:categoria</h3>
+                <p>Filtrar citações por categoria</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/quotes/category/Shippuden</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>POST /sasuke/quotes</h3>
+                <p>Adicionar uma nova citação do Sasuke (requer autenticação)</p>
+                <div class="code-example">
+                    <code>curl -X POST http://localhost:5000/sasuke/quotes -H "Authorization: Bearer sasuke_api_token" -H "Content-Type: application/json" -d '{"quote": "Sua nova citação", "context": "Contexto", "source": "Episódio X", "category": "Categoria"}'</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>DELETE /sasuke/quote/:id</h3>
+                <p>Remover uma citação do Sasuke (requer autenticação)</p>
+                <div class="code-example">
+                    <code>curl -X DELETE http://localhost:5000/sasuke/quote/1 -H "Authorization: Bearer sasuke_api_token"</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>PUT /sasuke/quote/:id</h3>
+                <p>Atualizar uma citação existente (requer autenticação)</p>
+                <div class="code-example">
+                    <code>curl -X PUT http://localhost:5000/sasuke/quote/1 -H "Authorization: Bearer sasuke_api_token" -H "Content-Type: application/json" -d '{"quote": "Citação atualizada", "context": "Novo contexto"}'</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>POST /sasuke/favorites/:id</h3>
+                <p>Adicionar uma citação aos favoritos (requer autenticação)</p>
+                <div class="code-example">
+                    <code>curl -X POST http://localhost:5000/sasuke/favorites/1 -H "Authorization: Bearer sasuke_api_token"</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3>GET /sasuke/favorites</h3>
+                <p>Listar todas as citações favoritas</p>
+                <div class="code-example">
+                    <code>curl -X GET http://localhost:5000/sasuke/favorites</code>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>API de Citações do Sasuke &copy; {{ year }} | Criado por <a href="https://github.com/Augusto240">Augusto240</a> | <a href="https://github.com/Augusto240/sasukeAPI">Ver no GitHub</a></p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
