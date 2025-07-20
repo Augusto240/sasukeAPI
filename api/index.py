@@ -681,7 +681,7 @@ class handler(BaseHTTPRequestHandler):
     <div class="container">
         <header>
             <div class="logo">
-                <img src="https://static.wikia.nocookie.net/anicrossbr/images/0/0b/1424404623764.png/revision/latest?cb=20160828091310&path-prefix=pt-br" alt="Sasuke Uchiha">
+                <img src="https://www.pngarts.com/files/3/Sasuke-PNG-Pic.png" alt="Sasuke Uchiha">
             </div>
             <h1>API de Citações do Sasuke</h1>
             <p>Explore a sabedoria e a determinação de Sasuke Uchiha</p>
