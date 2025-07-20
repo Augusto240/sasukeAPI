@@ -1,21 +1,10 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
-import os
+from flask import Flask, request, jsonify, Response
+from http.server import BaseHTTPRequestHandler
 import json
 import random
-from pathlib import Path
-from datetime import datetime
+import os
 
-app = Flask(__name__, static_folder='../static', template_folder='../templates')
-app.config['JSON_SORT_KEYS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sasuke_uchiha_secret')
-app.config['API_TOKEN'] = os.environ.get('API_TOKEN', 'sasuke_api_token')
-
-data_dir = Path('data')
-data_dir.mkdir(exist_ok=True)
-quotes_file = data_dir / 'quotes.json'
-favorites_file = data_dir / 'favorites.json'
-
-default_quotes = [
+quotes = [
     {
         "quote": "Eu vou restaurar meu clã e destruir um certo alguém.",
         "context": "Ao se apresentar para o Time 7",
@@ -138,254 +127,105 @@ default_quotes = [
     }
 ]
 
-def initialize_quotes():
-    try:
-        if not quotes_file.exists() or quotes_file.stat().st_size == 0:
-            quotes = [{"id": i+1, **quote} for i, quote in enumerate(default_quotes)]
-            with open(quotes_file, 'w', encoding='utf-8') as f:
-                json.dump({"quotes": quotes}, f, indent=2, ensure_ascii=False)
-                
-        if not favorites_file.exists():
-            with open(favorites_file, 'w', encoding='utf-8') as f:
-                json.dump({"favorites": []}, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        print(f"Erro ao inicializar arquivos: {e}")
+app = Flask(__name__)
 
-def get_quotes():
-    try:
-        if quotes_file.exists():
-            with open(quotes_file, 'r', encoding='utf-8') as f:
-                return json.load(f).get("quotes", [])
-        else:
-            initialize_quotes()
-            with open(quotes_file, 'r', encoding='utf-8') as f:
-                return json.load(f).get("quotes", [])
-    except Exception as e:
-        print(f"Erro ao obter citações: {e}")
-        return []
-
-def save_quotes(quotes):
-    try:
-        with open(quotes_file, 'w', encoding='utf-8') as f:
-            json.dump({"quotes": quotes}, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        print(f"Erro ao salvar citações: {e}")
-
-def get_favorites():
-    try:
-        if favorites_file.exists():
-            with open(favorites_file, 'r', encoding='utf-8') as f:
-                return json.load(f).get("favorites", [])
-        else:
-            with open(favorites_file, 'w', encoding='utf-8') as f:
-                json.dump({"favorites": []}, f, indent=2, ensure_ascii=False)
-            return []
-    except Exception as e:
-        print(f"Erro ao obter favoritos: {e}")
-        return []
-
-def save_favorites(favorites):
-    try:
-        with open(favorites_file, 'w', encoding='utf-8') as f:
-            json.dump({"favorites": favorites}, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        print(f"Erro ao salvar favoritos: {e}")
-
-def is_authorized():
-    auth_header = request.headers.get('Authorization')
-    expected_token = app.config.get('API_TOKEN')
-    
-    if not auth_header or not auth_header.startswith('Bearer ') or auth_header[7:] != expected_token:
-        return False
-    return True
-
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('../static', filename)
-
-@app.route('/')
-def home():
-    return render_template('index.html', year=datetime.now().year)
-
-@app.route('/sasuke/quote', methods=['GET'])
+@app.route('/api/quote', methods=['GET'])
 def get_random_quote():
-    initialize_quotes()
-    quotes = get_quotes()
-    if not quotes:
-        return jsonify({"message": "Nenhuma citação encontrada"}), 404
-    
     quote = random.choice(quotes)
     return jsonify(quote)
 
-@app.route('/sasuke/quotes', methods=['GET'])
+@app.route('/api/quotes', methods=['GET'])
 def get_all_quotes():
-    initialize_quotes()
-    quotes = get_quotes()
     return jsonify({"quotes": quotes})
 
-@app.route('/sasuke/quote/<int:id>', methods=['GET'])
+@app.route('/api/quote/<int:id>', methods=['GET'])
 def get_quote_by_id(id):
-    initialize_quotes()
-    quotes = get_quotes()
     for quote in quotes:
         if quote.get("id") == id:
             return jsonify(quote)
     return jsonify({"message": "Citação não encontrada"}), 404
 
-@app.route('/sasuke/search', methods=['GET'])
+@app.route('/api/search', methods=['GET'])
 def search_quotes():
-    initialize_quotes()
     term = request.args.get('q', '')
     if not term:
         return jsonify({"message": "Termo de busca é obrigatório"}), 400
     
-    quotes = get_quotes()
     results = [q for q in quotes if term.lower() in q.get("quote", "").lower()]
     return jsonify({"quotes": results})
 
-@app.route('/sasuke/quotes/category/<category>', methods=['GET'])
-def get_quotes_by_category(category):
-    initialize_quotes()
-    quotes = get_quotes()
-    results = [q for q in quotes if q.get("category", "").lower() == category.lower()]
-    return jsonify({"quotes": results})
-
-@app.route('/sasuke/categories', methods=['GET'])
+@app.route('/api/categories', methods=['GET'])
 def get_categories():
-    initialize_quotes()
-    quotes = get_quotes()
     categories = set(q.get("category", "") for q in quotes if "category" in q)
     return jsonify({"categories": list(categories)})
 
-@app.route('/sasuke/favorites', methods=['GET'])
-def get_all_favorites():
-    favorites = get_favorites()
-    return jsonify({"favorites": favorites})
+@app.route('/api/quotes/category/<category>', methods=['GET'])
+def get_quotes_by_category(category):
+    results = [q for q in quotes if q.get("category", "").lower() == category.lower()]
+    return jsonify({"quotes": results})
 
-@app.route('/sasuke/favorites/<int:id>', methods=['POST'])
-def add_favorite(id):
-    if not is_authorized():
-        return jsonify({"message": "Não autorizado"}), 401
+@app.route('/', methods=['GET'])
+def home():
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API de Citações do Sasuke</title>
+        <style>
+            body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+            h1 { color: #2c3e50; text-align: center; }
+            .quote-box { background: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }
+            button { background: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; display: block; margin: 20px auto; }
+            .endpoint { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        </style>
+    </head>
+    <body>
+        <h1>API de Citações do Sasuke</h1>
         
-    quotes = get_quotes()
-    favorites = get_favorites()
+        <div class="quote-box" id="quote-display">
+            Clique no botão para ver uma citação aleatória do Sasuke.
+        </div>
         
-    quote = next((q for q in quotes if q.get("id") == id), None)
-    if not quote:
-        return jsonify({"message": "Citação não encontrada"}), 404
+        <button id="get-quote">Ver Citação</button>
         
-    if id in [f.get("id") for f in favorites]:
-        return jsonify({"message": "Citação já está nos favoritos"}), 400
+        <h2>Endpoints da API:</h2>
+        <div class="endpoint">
+            <h3>GET /api/quote</h3>
+            <p>Obter uma citação aleatória</p>
+        </div>
+        <div class="endpoint">
+            <h3>GET /api/quotes</h3>
+            <p>Obter todas as citações</p>
+        </div>
+        <div class="endpoint">
+            <h3>GET /api/quote/:id</h3>
+            <p>Obter uma citação específica por ID</p>
+        </div>
+        <div class="endpoint">
+            <h3>GET /api/search?q=termo</h3>
+            <p>Pesquisar citações contendo o termo</p>
+        </div>
+        <div class="endpoint">
+            <h3>GET /api/quotes/category/:categoria</h3>
+            <p>Filtrar citações por categoria</p>
+        </div>
         
-    favorites.append(quote)
-    save_favorites(favorites)
-    
-    return jsonify({"message": "Citação adicionada aos favoritos", "quote": quote}), 201
-
-@app.route('/sasuke/favorites/<int:id>', methods=['DELETE'])
-def remove_favorite(id):
-    if not is_authorized():
-        return jsonify({"message": "Não autorizado"}), 401
-        
-    favorites = get_favorites()
-    filtered_favorites = [f for f in favorites if f.get("id") != id]
-    
-    if len(filtered_favorites) < len(favorites):
-        save_favorites(filtered_favorites)
-        return "", 204
-    
-    return jsonify({"message": "Citação não encontrada nos favoritos"}), 404
-
-@app.route('/sasuke/quotes', methods=['POST'])
-def add_quote():
-    initialize_quotes()    
-    if not is_authorized():
-        return jsonify({"message": "Não autorizado"}), 401
-        
-    data = request.get_json()
-    if not data or not data.get('quote'):
-        return jsonify({"message": "Texto da citação é obrigatório"}), 400
-    
-    quote_text = data.get('quote')
-    if len(quote_text) > 500:
-        return jsonify({"message": "Citação não pode exceder 500 caracteres"}), 400
-        
-    context = data.get('context', 'Desconhecido')
-    source = data.get('source', 'Desconhecido')
-    category = data.get('category', 'Outros')
-        
-    quotes = get_quotes()
-    ids = [q.get("id", 0) for q in quotes]
-    new_id = max(ids) + 1 if ids else 1
-    
-    new_quote = {
-        "id": new_id, 
-        "quote": quote_text,
-        "context": context,
-        "source": source,
-        "category": category
-    }
-    
-    quotes.append(new_quote)
-    save_quotes(quotes)
-    
-    return jsonify(new_quote), 201
-
-@app.route('/sasuke/quote/<int:id>', methods=['DELETE'])
-def delete_quote(id):
-    initialize_quotes()    
-    if not is_authorized():
-        return jsonify({"message": "Não autorizado"}), 401
-    
-    quotes = get_quotes()
-    filtered_quotes = [q for q in quotes if q.get("id") != id]
-    
-    if len(filtered_quotes) < len(quotes):
-        save_quotes(filtered_quotes)
-        return "", 204
-    
-    return jsonify({"message": "Citação não encontrada"}), 404
-
-@app.route('/sasuke/quote/<int:id>', methods=['PUT'])
-def update_quote(id):
-    initialize_quotes()    
-    if not is_authorized():
-        return jsonify({"message": "Não autorizado"}), 401
-        
-    data = request.get_json()
-    if not data or not data.get('quote'):
-        return jsonify({"message": "Texto da citação é obrigatório"}), 400
-    
-    quote_text = data.get('quote')
-    if len(quote_text) > 500:
-        return jsonify({"message": "Citação não pode exceder 500 caracteres"}), 400
-    
-    quotes = get_quotes()
-    for quote in quotes:
-        if quote.get("id") == id:
-            quote["quote"] = quote_text
-            quote["context"] = data.get('context', quote.get('context', 'Desconhecido'))
-            quote["source"] = data.get('source', quote.get('source', 'Desconhecido'))
-            quote["category"] = data.get('category', quote.get('category', 'Outros'))
-            
-            save_quotes(quotes)
-            return jsonify(quote)
-    
-    return jsonify({"message": "Citação não encontrada"}), 404
-
-app.debug = False
-
-from flask import request
-
-@app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def catch_all(path):
-    return jsonify({"error": "Rota não encontrada"}), 404
-
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from werkzeug.serving import make_server
-import sys
-
-app.initialize = initialize_quotes
+        <script>
+            document.getElementById('get-quote').addEventListener('click', async () => {
+                const response = await fetch('/api/quote');
+                const data = await response.json();
+                document.getElementById('quote-display').textContent = data.quote;
+            });
+        </script>
+    </body>
+    </html>
+    """
+    return Response(html_content, mimetype='text/html')
 
 def handler(event, context):
-    return app(event, context)
+    return app
+
+if __name__ == "__main__":
+    app.run(debug=True)
