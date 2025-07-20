@@ -681,7 +681,7 @@ class handler(BaseHTTPRequestHandler):
     <div class="container">
         <header>
             <div class="logo">
-                <img src="./static/images/sasuke.png" alt="Sasuke Uchiha">
+                <img src="https://static.wikia.nocookie.net/anicrossbr/images/0/0b/1424404623764.png/revision/latest?cb=20160828091310&path-prefix=pt-br" alt="Sasuke Uchiha">
             </div>
             <h1>API de Citações do Sasuke</h1>
             <p>Explore a sabedoria e a determinação de Sasuke Uchiha</p>
@@ -690,7 +690,7 @@ class handler(BaseHTTPRequestHandler):
         <section class="quote-section">
             <div class="quote-container">
                 <div class="sharingan-icon">
-                    <img src="./static/images/sharingan.png" alt="Sharingan" class="spin-on-click" id="sharingan-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Mangekyou_Sharingan_Sasuke_%28Eternal%29.svg" alt="Sharingan" class="spin-on-click" id="sharingan-img">
                 </div>
                 <div class="quote-box">
                     <p id="quote-text">Clique no botão para ver uma citação do Sasuke</p>
