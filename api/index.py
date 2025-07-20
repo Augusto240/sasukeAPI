@@ -285,13 +285,13 @@ class handler(BaseHTTPRequestHandler):
         body.light-mode {
             color: var(--text-light);
             background-color: var(--background-light);
-            background-image: url('https://i.imgur.com/RZ1hRzK.jpg');
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
         body.dark-mode {
             color: var(--text-dark);
             background-color: var(--background-dark);
-            background-image: url('https://i.imgur.com/8kcsqgC.jpg');
+            background-image: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
         .container {
@@ -681,7 +681,7 @@ class handler(BaseHTTPRequestHandler):
     <div class="container">
         <header>
             <div class="logo">
-                <img src="https://i.imgur.com/Swh9Vof.jpg" alt="Sasuke Uchiha">
+                <img src="./static/images/sasuke.png" alt="Sasuke Uchiha">
             </div>
             <h1>API de Citações do Sasuke</h1>
             <p>Explore a sabedoria e a determinação de Sasuke Uchiha</p>
@@ -690,7 +690,7 @@ class handler(BaseHTTPRequestHandler):
         <section class="quote-section">
             <div class="quote-container">
                 <div class="sharingan-icon">
-                    <img src="https://i.imgur.com/rSXCV1p.png" alt="Sharingan" class="spin-on-click" id="sharingan-img">
+                    <img src="./static/images/sharingan.png" alt="Sharingan" class="spin-on-click" id="sharingan-img">
                 </div>
                 <div class="quote-box">
                     <p id="quote-text">Clique no botão para ver uma citação do Sasuke</p>
