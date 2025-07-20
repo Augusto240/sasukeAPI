@@ -684,7 +684,7 @@ class handler(BaseHTTPRequestHandler):
                 <img src="https://www.pngarts.com/files/3/Sasuke-PNG-Pic.png" alt="Sasuke Uchiha">
             </div>
             <h1>API de Citações do Sasuke</h1>
-            <p>Explore a sabedoria e a determinação de Sasuke Uchiha</p>
+            <p>Explore a sabedoria e a determinação do Sasuke!</p>
         </header>
         
         <section class="quote-section">
